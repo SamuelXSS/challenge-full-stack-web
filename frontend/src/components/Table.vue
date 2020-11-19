@@ -3,7 +3,7 @@
     :headers="headers"
     :items="students"
     :search="search"
-    sort-by="calories"
+    sort-by="ra"
     class="elevation-1"
   >
     <template v-slot:top>
@@ -89,6 +89,105 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+        <v-dialog v-model="gradesDialog" max-width="500px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">Notas {{ editedItem.name }}</span>
+              <v-toolbar flat>
+                <v-spacer></v-spacer>
+                <v-menu bottom right offset-y>
+                  <template v-slot:activator="{}">
+                    <v-btn
+                      dark
+                      small
+                      color="primary"
+                      fab
+                      @click="showAddGrades(editedItem)"
+                    >
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
+                  </template>
+                </v-menu>
+              </v-toolbar>
+            </v-card-title>
+
+            <v-card-text>
+              <v-container>
+                <template>
+                  <v-expansion-panels focusable>
+                    <v-expansion-panel
+                      v-for="(item, i) in grades.length"
+                      :key="i"
+                    >
+                      <v-expansion-panel-header>{{
+                        grades[i].subject
+                      }}</v-expansion-panel-header>
+                      <v-expansion-panel-content
+                        ><br />
+                        Nota: <strong>{{ grades[i].grade }}</strong>
+                        <v-alert
+                          dense
+                          text
+                          :type="grades[i].grade >= 5 ? 'success' : 'error'"
+                        >
+                          Aluno
+                          <strong
+                            >{{
+                              grades[i].grade >= 5 ? "aprovado" : "reprovado"
+                            }}!</strong
+                          >
+                        </v-alert>
+                      </v-expansion-panel-content>
+                    </v-expansion-panel>
+                  </v-expansion-panels>
+                </template>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="gradesDialog = false">
+                Fechar
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="addGradeDialog" max-width="500px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">Adicionar nota</span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-container>
+                <template>
+                  <v-row>
+                    <v-col cols="12" sm="6" md="6">
+                      <v-select v-model="addGrade.subject" :items="subjects" label="Matéria"></v-select>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="6">
+                      <v-text-field
+                        v-model="addGrade.grade"
+                        required
+                        label="Nota"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </template>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="gray darken-1" text @click="addGradeDialog = false">
+                Fechar
+              </v-btn>
+              <v-btn color="blue darken-1" text @click="addNewGrade">
+                Adicionar
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="headline"
@@ -97,13 +196,13 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closeDelete"
-                >Cancel</v-btn
+                >Cancelar</v-btn
               >
               <v-btn
                 color="blue darken-1"
                 text
                 @click="deleteItemConfirm(editedItem)"
-                >OK</v-btn
+                >Excluir</v-btn
               >
               <v-spacer></v-spacer>
             </v-card-actions>
@@ -112,16 +211,19 @@
       </v-toolbar>
     </template>
     <template v-slot:item.actions="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">
+      <v-icon medium color="yellow" class="mr-2" @click="editItem(item)">
         mdi-pencil
       </v-icon>
-      <v-icon small @click="deleteItem(item)">
+      <v-icon medium color="blue" class="mr-2" @click="showGrades(item)">
+        mdi-library
+      </v-icon>
+      <v-icon medium color="red" @click="deleteItem(item)">
         mdi-delete
       </v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">
-        Reset
+        Atualizar
       </v-btn>
     </template>
   </v-data-table>
@@ -146,7 +248,10 @@ export default {
     search: "",
     switch1: Boolean,
     dialog: false,
+    studentStatus: "aprovado",
     dialogDelete: false,
+    gradesDialog: false,
+    addGradeDialog: false,
     headers: [
       {
         text: "Registro Acadêmico",
@@ -154,11 +259,14 @@ export default {
         sortable: true,
         value: "ra",
       },
+      { text: "", value: "grade" },
       { text: "Nome", value: "name" },
       { text: "CPF", value: "cpf" },
       { text: "Ações", value: "actions", sortable: false },
     ],
     students: [],
+    grades: [],
+    subjects: [],
     editedIndex: -1,
     editedItem: {
       name: "",
@@ -167,6 +275,11 @@ export default {
       ra: "",
       locked: "",
     },
+    addGrade: {
+      ra: "",
+      grade: "",
+      subject: ""
+    }
   }),
 
   computed: {
@@ -211,6 +324,36 @@ export default {
       this.editedIndex = this.students.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialog = true;
+    },
+
+    async showGrades(item) {
+      console.log(item);
+      this.grades = [];
+      await api.get(`/students/${item.ra}/grade`).then((res) => {
+        res.data.map((x) => {
+          this.grades.push({
+            subject: x.subjects.name,
+            grade: parseFloat(x.grade),
+          });
+        });
+      });
+      this.gradesDialog = true;
+      console.log(item);
+    },
+
+    async showAddGrades(item){
+      this.subjects = []
+      this.addGradeDialog = true
+      await api.get('/subjects').then(res => {
+        res.data.map(x => { 
+          this.subjects.push(x.name)
+        })
+      })
+      console.log(item)
+    },
+
+    async addNewGrade(){
+      console.log(this.addGrade)
     },
 
     deleteItem(item) {

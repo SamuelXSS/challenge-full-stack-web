@@ -1,40 +1,14 @@
 <template>
   <v-app id="inspire">
-    <v-system-bar app>
-      <v-spacer></v-spacer>
-
-      <v-icon>mdi-square</v-icon>
-
-      <v-icon>mdi-circle</v-icon>
-
-      <v-icon>mdi-triangle</v-icon>
-    </v-system-bar>
-
-    <v-navigation-drawer
-      v-model="drawer"
-      app
-    >
-      <v-sheet
-        color="grey lighten-4"
-        class="pa-4"
-      >
-        <v-avatar
-          class="mb-4"
-          color="grey darken-1"
-          size="64"
-        ></v-avatar>
-
-        <div>john@vuetifyjs.com</div>
+    <v-navigation-drawer v-model="drawer" app>
+      <v-sheet color="grey lighten-4" class="pa-4">
+        <img src="./assets/logo.png" />
       </v-sheet>
 
       <v-divider></v-divider>
 
       <v-list>
-        <v-list-item
-          v-for="[icon, text] in links"
-          :key="icon"
-          link
-        >
+        <v-list-item v-for="[icon, text] in links" :key="icon" link>
           <v-list-item-icon>
             <v-icon>{{ icon }}</v-icon>
           </v-list-item-icon>
@@ -47,19 +21,13 @@
     </v-navigation-drawer>
 
     <v-main>
-      <v-container
-        class="py-8 px-6"
-        fluid
-      >
+      <v-container class="py-8 px-6" fluid>
         <v-row>
-          <v-col
-            v-for="card in cards"
-            :key="card"
-            cols="12"
-          >
+          <v-col v-for="card in cards" :key="card" cols="12">
             <v-card>
               <Table />
             </v-card>
+            <ChartContainer />
           </v-col>
         </v-row>
       </v-container>
@@ -68,20 +36,20 @@
 </template>
 
 <script>
-  import Table from '@/components/Table.vue'
-  export default {
-    components: {
-      Table
-    },
-    data: () => ({
-      cards: ['Today'],
-      drawer: null,
-      links: [
-        ['mdi-inbox-arrow-down', 'Inbox'],
-        ['mdi-send', 'Send'],
-        ['mdi-delete', 'Trash'],
-        ['mdi-alert-octagon', 'Spam'],
-      ],
-    }),
-  }
+import Table from "@/components/Table.vue";
+import ChartContainer from "@/components/ChartContainer.vue";
+export default {
+  components: {
+    Table,
+    ChartContainer,
+  },
+  data: () => ({
+    cards: ["Students"],
+    drawer: null,
+    links: [
+      ["mdi-account-multiple", "Alunos"],
+      ["mdi-book-multiple", "Matérias"],
+    ],
+  }),
+};
 </script>
