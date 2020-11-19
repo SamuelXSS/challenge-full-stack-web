@@ -11,6 +11,7 @@ class Grade extends Model {
 
     static associate(models){
         this.belongsTo(models.Student, { foreignKey: 'student_id', as: 'students' })
+        this.belongsTo(models.Subject, { foreignKey: 'subject_id', as: 'subjects' })
     }
 }
 
