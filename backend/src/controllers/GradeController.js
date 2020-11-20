@@ -42,6 +42,12 @@ module.exports = {
         const subject = await Subject.findByPk(subject_id)
         const checkSubject = await Grade.findOne({ where: { subject_id, student_id } })
 
+        if(grade == ''){
+            return res.status(401).json({ error: 'Digite uma nota!' })
+        }
+        if(!subject_id){
+            return res.status(401).json({ error: 'Selecione uma matéria!' })
+        }
         if(!student){
             return res.status(400).json({ error: 'Aluno não encontrado' })
         }
