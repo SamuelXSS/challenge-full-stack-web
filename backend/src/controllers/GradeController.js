@@ -110,7 +110,7 @@ module.exports = {
             return res.status(401).json({ error: 'Você não pode deletar a nota de um aluno com matrícula trancada' })
         }
 
-        await studentGrade.destroy({ where: { subject_id } })
+        await Grade.destroy({ where: { subject_id, student_id } })
         return res.status(200).json({ sucess: 'Nota deletada com sucesso!'})
     }
 }
