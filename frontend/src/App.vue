@@ -27,7 +27,6 @@
             <v-card>
               <Table />
             </v-card>
-            <ChartContainer />
           </v-col>
         </v-row>
       </v-container>
@@ -37,18 +36,15 @@
 
 <script>
 import Table from "@/components/Table.vue";
-import ChartContainer from "@/components/ChartContainer.vue";
 export default {
   components: {
     Table,
-    ChartContainer,
   },
   data: () => ({
     cards: ["Students"],
     drawer: null,
     links: [
-      ["mdi-account-multiple", "Alunos"],
-      ["mdi-book-multiple", "Matérias"],
+      ["mdi-account-multiple", "Alunos"]
     ],
   }),
 };

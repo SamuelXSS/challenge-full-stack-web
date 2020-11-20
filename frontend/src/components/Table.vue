@@ -3,10 +3,24 @@
     :headers="headers"
     :items="students"
     :search="search"
+    :footer-props="{'items-per-page-text': 'Matrículas por página'}"
     sort-by="ra"
     class="elevation-1"
   >
     <template v-slot:top>
+      <v-snackbar v-model="snack.snackbar" :color="snack.color">
+        {{ snack.res }}
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="white"
+            text
+            v-bind="attrs"
+            @click="snack.snackbar = false"
+          >
+            Fechar
+          </v-btn>
+        </template>
+      </v-snackbar>
       <v-toolbar flat>
         <v-toolbar-title>Lista de Alunos</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
@@ -55,7 +69,9 @@
                     <v-text-field
                       v-model="editedItem.cpf"
                       :disabled="isDisabled"
+                      :rules="cpfRules"
                       label="CPF"
+                      maxLength="11"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
@@ -155,7 +171,17 @@
         <v-dialog v-model="addGradeDialog" max-width="500px">
           <v-card>
             <v-card-title>
-              <span class="headline">Adicionar nota</span>
+              <span class="headline">Adicionar Nota</span>
+              <v-toolbar flat>
+                <v-spacer></v-spacer>
+                <v-menu bottom right offset-y>
+                  <template v-slot:activator="{}">
+                    <v-btn dark small color="primary" @click="showAddSubject()">
+                      <span>Matéria</span>
+                    </v-btn>
+                  </template>
+                </v-menu>
+              </v-toolbar>
             </v-card-title>
 
             <v-card-text>
@@ -163,7 +189,11 @@
                 <template>
                   <v-row>
                     <v-col cols="12" sm="6" md="6">
-                      <v-select v-model="addGrade.subject" :items="subjects" label="Matéria"></v-select>
+                      <v-select
+                        v-model="addGrade.subject"
+                        :items="subjects"
+                        label="Matéria"
+                      ></v-select>
                     </v-col>
                     <v-col cols="12" sm="6" md="6">
                       <v-text-field
@@ -182,7 +212,44 @@
               <v-btn color="gray darken-1" text @click="addGradeDialog = false">
                 Fechar
               </v-btn>
-              <v-btn color="blue darken-1" text @click="addNewGrade">
+              <v-btn color="blue darken-1" text @click="addNewGrade(addGrade)">
+                Adicionar
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="addSubjectDialog" max-width="500px">
+          <v-card>
+            <v-card-title>
+              <span class="headline">Adicionar Matéria</span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-container>
+                <template>
+                  <v-row>
+                    <v-col cols="12" sm="6" md="6">
+                      <v-text-field
+                        v-model="newSubject"
+                        required
+                        label="Matéria"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </template>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="gray darken-1" text @click="addSubjectDialog = false">
+                Fechar
+              </v-btn>
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="addNewSubject(newSubject)"
+              >
                 Adicionar
               </v-btn>
             </v-card-actions>
@@ -210,7 +277,7 @@
         </v-dialog>
       </v-toolbar>
     </template>
-    <template v-slot:item.actions="{ item }">
+    <template v-slot:[`item.actions`]="{ item }">
       <v-icon medium color="yellow" class="mr-2" @click="editItem(item)">
         mdi-pencil
       </v-icon>
@@ -243,15 +310,27 @@ export default {
     ],
     cpfRules: [
       (v) => !!v || "Digite um cpf",
+      (v) =>
+        /^(([0-9]{3}.[0-9]{3}.[0-9]{3}-[0-9]{2})|([0-9]{11}))$/.test(v) ||
+        "CPF deve ser válido",
+    ],
+    gradeRules: [
+      (v) => !!v || "Digite uma nota",
       (v) => /.+@.+\..+/.test(v) || "E-mail deve ser válido",
     ],
     search: "",
+    snack: {
+      snackbar: false,
+      color: "",
+      res: "",
+    },
     switch1: Boolean,
     dialog: false,
     studentStatus: "aprovado",
     dialogDelete: false,
     gradesDialog: false,
     addGradeDialog: false,
+    addSubjectDialog: false,
     headers: [
       {
         text: "Registro Acadêmico",
@@ -259,7 +338,6 @@ export default {
         sortable: true,
         value: "ra",
       },
-      { text: "", value: "grade" },
       { text: "Nome", value: "name" },
       { text: "CPF", value: "cpf" },
       { text: "Ações", value: "actions", sortable: false },
@@ -267,19 +345,20 @@ export default {
     students: [],
     grades: [],
     subjects: [],
+    newSubject: "",
     editedIndex: -1,
     editedItem: {
+      ra: "",
       name: "",
       email: "",
       cpf: "",
-      ra: "",
       locked: "",
     },
     addGrade: {
       ra: "",
       grade: "",
-      subject: ""
-    }
+      subject: "",
+    },
   }),
 
   computed: {
@@ -320,6 +399,18 @@ export default {
       });
     },
 
+    successMsg(msg) {
+      this.snack.snackbar = true;
+      this.snack.color = "#4caf50";
+      this.snack.res = msg;
+    },
+
+    errorMsg(msg) {
+      this.snack.snackbar = true;
+      this.snack.color = "#ff5252";
+      this.snack.res = msg;
+    },
+
     editItem(item) {
       this.editedIndex = this.students.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -328,6 +419,8 @@ export default {
 
     async showGrades(item) {
       console.log(item);
+      this.gradesDialog = true;
+      this.editedItem = Object.assign({}, item);
       this.grades = [];
       await api.get(`/students/${item.ra}/grade`).then((res) => {
         res.data.map((x) => {
@@ -337,23 +430,40 @@ export default {
           });
         });
       });
-      this.gradesDialog = true;
+    },
+
+    async showAddGrades(item) {
+      this.editedItem = Object.assign({}, item);
+      this.subjects = [];
+      this.addGradeDialog = true;
+      await api.get("/subjects").then((res) => {
+        res.data.map((x) => {
+          this.subjects.push(x.name);
+          this.addGrade.ra = this.editedItem.ra;
+        });
+      });
       console.log(item);
     },
 
-    async showAddGrades(item){
-      this.subjects = []
-      this.addGradeDialog = true
-      await api.get('/subjects').then(res => {
-        res.data.map(x => { 
-          this.subjects.push(x.name)
-        })
-      })
-      console.log(item)
-    },
-
-    async addNewGrade(){
-      console.log(this.addGrade)
+    async addNewGrade(item) {
+      this.addGrade = Object.assign({}, item);
+      console.log(item);
+      await api.get(`/subjects/${item.subject}`).then(async (res) => {
+        await api
+          .post(`/students/${item.ra}/subject/${res.data.id}/grade`, {
+            grade: item.grade,
+          })
+          .then((res) => {
+            this.grades.push(item);
+            this.successMsg(res.data.success);
+            this.addGradeDialog = false;
+          })
+          .catch((err) => {
+            if (err.response) {
+              this.errorMsg(err.response.data.error);
+            }
+          });
+      });
     },
 
     deleteItem(item) {
@@ -363,13 +473,18 @@ export default {
     },
 
     async deleteItemConfirm(item) {
-      this.students.splice(this.editedIndex, 1);
-      this.closeDelete();
-      await api.delete(`/students/${item.ra}`);
-    },
-
-    teste(event) {
-      console.log(event);
+      await api
+        .delete(`/students/${item.ra}`)
+        .then((res) => {
+          this.students.splice(this.editedIndex, 1);
+          this.closeDelete();
+          this.successMsg(res.data.success);
+        })
+        .catch((err) => {
+          if (err.response) {
+            this.errorMsg(err.response.data.error);
+          }
+        });
     },
 
     close() {
@@ -388,25 +503,62 @@ export default {
       });
     },
 
+    showAddSubject() {
+      this.addSubjectDialog = true;
+    },
+
+    async addNewSubject(item) {
+      await api
+        .post(`/subjects`, {
+          name: item,
+        })
+        .then((res) => {
+          this.addSubjectDialog = false
+          this.subjects.push(item)
+          this.successMsg(res.data.success);
+        })
+        .catch((err) => {
+          if (err.response) {
+            this.errorMsg(err.response.data.error);
+          }
+        });
+    },
+
     async save(item) {
       if (this.editedIndex > -1) {
         Object.assign(this.students[this.editedIndex], this.editedItem);
-        await api.put(`/students/${item.ra}`, {
-          name: item.name,
-          email: item.email,
-          locked: this.switch1,
-        });
+        await api
+          .put(`/students/${item.ra}`, {
+            name: item.name,
+            email: item.email,
+            locked: this.switch1,
+          })
+          .then((res) => {
+            this.close();
+            this.successMsg(res.data.success);
+          })
+          .catch((err) => {
+            if (err.response) {
+              this.errorMsg(err.response.data.error);
+            }
+          });
       } else {
-        this.students.push(this.editedItem);
-        await api.post(`/students`, {
-          name: item.name,
-          email: item.email,
-          cpf: item.cpf,
-          locked: this.switch1,
-        });
-        Location.reload();
+        await api
+          .post(`/students`, {
+            name: item.name,
+            email: item.email,
+            cpf: item.cpf,
+            locked: this.switch1,
+          })
+          .then(() => {
+            document.location.reload(true);
+          })
+          .catch((err) => {
+            if (err.response) {
+              this.errorMsg(err.response.data.error);
+            }
+          });
       }
-      this.close();
     },
   },
 };
