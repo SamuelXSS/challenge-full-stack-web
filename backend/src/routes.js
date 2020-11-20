@@ -20,6 +20,7 @@ routes.put('/students/:student_id/subject/:subject_id/grade', GradeController.up
 routes.delete('/students/:student_id/subject/:subject_id/grade', GradeController.destroy)
 
 //SUBJECTS ROUTES -- OK
+routes.get('/subjects/:name', SubjectController.show)
 routes.get('/subjects', SubjectController.index)
 routes.post('/subjects', SubjectController.store)
 routes.put('/subjects/:subject_id', SubjectController.update)

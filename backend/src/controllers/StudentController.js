@@ -10,25 +10,42 @@ module.exports = {
     async store(req, res){
         const { name, email, cpf, locked } = req.body
 
+        const checkEmail = await Student.findOne({ where: { email } })
+        const checkCpf = await Student.findOne({ where: { cpf } })
+
+        if(name == '' || email == '' || cpf == ''){
+            return res.status(401).json({ error: 'Preencha todos os campos!' })
+        }
+        if(checkEmail){
+            return res.status(401).json({ error: 'Já há um aluno usando este e-mail!' })
+        }
+        if(checkCpf){
+            return res.status(401).json({ error: 'Já há um aluno usando este CPF!' })
+        }
+
         const student = await Student.create({ name, email, cpf, locked })
 
-        return res.json(student)
+        return res.status(200).json({ success: 'Aluno criado com sucesso!', student })
     },
 
     async update(req, res){
         const { student_id } = req.params
         const { name, email, locked } = req.body
 
+        if(name == '' || email == ''){
+            return res.status(401).json({ error: 'Preencha todos os campos' })
+        }
+
         const student = await Student.findByPk(student_id)
 
         if(email !== student.email){
             const studentExists = await Student.findOne({ where: { email } })
-            if(studentExists) res.status(400).json({ error: 'Email already exists.' })
+            if(studentExists) res.status(400).json({ error: 'Esse email já está cadastrado em outro aluno!' })
         }
 
         const updateStudent = await student.update({ name, email, locked })
 
-        return res.json(updateStudent)
+        return res.status(200).json({success: 'Cadastro atualizado com sucesso!', updateStudent})
     },
 
     async destroy(req, res){
@@ -37,9 +54,9 @@ module.exports = {
         const student = await Student.findByPk(student_id)
 
         if(student.locked == false){
-            return res.status(401).json({ error: 'You can only delete an user if the registration is locked!' })
+            return res.status(401).json({ error: 'Você só pode excluir uma matrícula se ela estiver trancada!' })
         }
-        const deleted = await Student.destroy({ where: { id: student_id} })
-        if(deleted) res.json({ success: 'User deleted!' })
+        await Student.destroy({ where: { id: student_id} })
+        return res.status(200).json({ success: 'Cadastro deletado com sucesso!' })
     }
 }

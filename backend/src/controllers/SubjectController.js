@@ -1,6 +1,15 @@
 const Subject = require('../models/Subject')
+const Grade = require('../models/Grade')
 
 module.exports = {
+
+    async show(req, res){
+        const { name } = req.params
+
+        const subject = await Subject.findOne({ where: { name } })
+
+        res.json(subject)
+    },
 
     async index(req, res){
         const subjects = await Subject.findAll()
@@ -14,51 +23,47 @@ module.exports = {
         const subject = await Subject.findOne({ where: { name } })
 
         if(subject){
-            return res.status(400).json({ error: 'Subject already exists' })
+            return res.status(400).json({ error: `A matéria ${name} já existe!` })
         }
 
         const createSubject = await Subject.create({
             name
         })
 
-        return res.json(createSubject)
+        return res.status(200).json({ success: 'Matéria criada com sucesso!', createSubject})
         
     },
 
     async update(req, res){
-        const { student_id } = req.params
-        const { grade } = req.body
+        const { subject_id } = req.params
+        const { name } = req.body
 
-        const studentGrade = await Grade.findByPk(student_id)
-        const student = await Student.findByPk(student_id)
+        const subject = await Subject.findByPk(subject_id)
+        if(!subject){
+            return res.status(400).json({ error: 'Essa matéria não existe!' })
+        } 
+        const updateSubject = await subject.update({name}) 
 
-        if(!studentGrade){
-            return res.status(400).json({ student: 'No grade associated with the student was found' })
-        }
+        return res.status(200).json({ success: 'Matéria atualizada com sucesso!', updateSubject })
 
-        if(student.locked == true){
-            return res.status(401).json({ error: 'You cannot grade a student with a locked registration!' })
-        }
-
-        const updateGrade = await studentGrade.update({ grade })
-
-        return res.json(updateGrade)
     },
 
     async destroy(req, res){
-        const { student_id } = req.params
+        const { subject_id } = req.params
+
+        const subject = await Subject.findByPk(subject_id)
+        const checkGrades = await Grade.findOne({ where: { subject_id } })
+
+        if(!subject){
+            return res.status(400).json({ error: 'Essa matéria não existe!' })
+        }
+        if(checkGrades){
+            return res.status(401).json({ error: 'Você não pode excluir essa matéria pois há notas de alunos atribuídas à ela!' })
+        }
         
-        const studentGrade = await Grade.findByPk(student_id)
-        const student = await Student.findByPk(student_id)
+        const deleteSubject = await subject.destroy() 
 
-        if(!studentGrade){
-            return res.status(400).json({ student: 'No grade associated with the student was found' })
-        }
+        return res.status(200).json({ success: 'Matéria excluída com sucesso!' })
 
-        if(student.locked == true){
-            return res.status(401).json({ error: 'You cannot delete a student\'s grade with the registration locked!' })
-        }
-        const deleted = await studentGrade.destroy()
-        if(deleted) res.json({ success: 'Grade deleted!' })
     }
 }
