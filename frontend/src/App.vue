@@ -1,5 +1,21 @@
 <template>
   <v-app id="inspire">
+    <v-snackbar
+      v-model="snack.snackbar"
+      :color="snack.color"
+    >
+      {{ snack.res }}
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snack.snackbar = false"
+        >
+          Fechar
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-navigation-drawer v-model="drawer" app>
       <v-sheet color="grey lighten-4" class="pa-4">
         <img src="./assets/logo.png" />
@@ -25,7 +41,7 @@
         <v-row>
           <v-col v-for="card in cards" :key="card" cols="12">
             <v-card>
-              <Table />
+              <StudentTable />
             </v-card>
           </v-col>
         </v-row>
@@ -35,17 +51,19 @@
 </template>
 
 <script>
-import Table from "@/components/Table.vue";
+import StudentTable from "@/components/StudentTable.vue";
+import { mapState } from "vuex";
 export default {
   components: {
-    Table,
+    StudentTable,
+  },
+  computed: {
+    ...mapState(["snack"]),
   },
   data: () => ({
     cards: ["Students"],
     drawer: null,
-    links: [
-      ["mdi-account-multiple", "Alunos"]
-    ],
+    links: [["mdi-account-multiple", "Alunos"]],
   }),
 };
 </script>
