@@ -53,16 +53,16 @@ export default {
           name: item,
         })
         .then((res) => {
-          this.$store.state.addSubjectDialog = false;
-          this.$store.state.subjects.push(item);
-          this.$store.dispatch("setSnack", {color: "success",res: res.data.success});
+          this.$store.state.addSubjectDialog = false
+          this.$store.state.subjects.push(item)
+          this.$store.dispatch('setSnack', {color: 'success',res: res.data.success})
         })
         .catch((err) => {
           if (err.response) {
-            this.$store.dispatch("setSnack", {color: "error",res: err.response.data.error});
+            this.$store.dispatch('setSnack', {color: 'error',res: err.response.data.error})
           }
-        });
+        })
     },
   },
-};
+}
 </script>

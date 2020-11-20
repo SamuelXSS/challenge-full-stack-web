@@ -60,33 +60,33 @@
 </template>
 
 <script>
-import api from "../../services/api";
+import api from '../../services/api'
 
 export default {
   methods: {
     async addNewGrade(item) {
-      this.$store.state.addGrade = Object.assign({}, item);
-      console.log(item);
+      this.$store.state.addGrade = Object.assign({}, item)
+      console.log(item)
       await api.get(`/subjects/${item.subject}`).then(async (res) => {
         await api
           .post(`/students/${item.ra}/subject/${res.data.id}/grade`, {
             grade: item.grade,
           })
           .then((res) => {
-            this.$store.state.grades.push(item);
-            this.$store.state.addGradeDialog = false;
-            this.$store.dispatch("setSnack", {color: "#4caf50",res: res.data.success,});
+            this.$store.state.grades.push(item)
+            this.$store.state.addGradeDialog = false
+            this.$store.dispatch('setSnack', {color: '#4caf50',res: res.data.success,})
           })
           .catch((err) => {
             if (err.response) {
-              this.$store.dispatch("setSnack", {color: "error",res: err.response.data.error});
+              this.$store.dispatch('setSnack', {color: 'error',res: err.response.data.error})
             }
-          });
-      });
+          })
+      })
     },
     showAddSubject() {
-      this.$store.state.addSubjectDialog = true;
+      this.$store.state.addSubjectDialog = true
     },
   },
-};
+}
 </script>

@@ -23,15 +23,20 @@
 
       <v-card-text>
         <v-container>
-          <template>
+          <template v-if="$store.state.grades.length > 0">
             <v-expansion-panels focusable>
               <v-expansion-panel
                 v-for="(item, i) in $store.state.grades.length"
                 :key="i"
               >
-                <v-expansion-panel-header>{{
-                  $store.state.grades[i].subject
-                }}</v-expansion-panel-header>
+                <v-expansion-panel-header>
+                  {{ $store.state.grades[i].subject }}
+                  <template v-slot:actions>
+                    <v-icon :color="$store.state.grades[i].grade >= 5 ? 'success' : 'error'">
+                      {{$store.state.grades[i].grade >= 5 ? 'mdi-check' : 'mdi-alert-circle'}}
+                    </v-icon>
+                  </template>
+                </v-expansion-panel-header>
                 <v-expansion-panel-content
                   ><br />
                   Nota:
@@ -56,6 +61,11 @@
               </v-expansion-panel>
             </v-expansion-panels>
           </template>
+          <template v-else>
+            <v-alert dense border="left" type="warning">
+              Nenhuma nota foi atribuída para o Aluno!
+            </v-alert>
+          </template>
         </v-container>
       </v-card-text>
 
@@ -74,7 +84,7 @@
 </template>
 
 <script>
-import api from '../../services/api'
+import api from "../../services/api";
 
 export default {
   methods: {

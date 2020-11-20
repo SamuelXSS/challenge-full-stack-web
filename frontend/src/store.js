@@ -5,7 +5,7 @@ import {
     emailRules,
     cpfRules,
     gradeRules
-} from "./components/rules";
+} from './components/rules';
 
 Vue.use(Vuex)
 
@@ -15,7 +15,7 @@ export default new Vuex.Store({
         emailRules,
         cpfRules,
         gradeRules,
-        search: "",
+        search: '',
         dialog: false,
         switch1: Boolean,
         dialogDelete: false,
@@ -25,20 +25,20 @@ export default new Vuex.Store({
         students: [],
         grades: [],
         subjects: [],
-        newSubject: "",
+        newSubject: '',
         editedIndex: -1,
         snack: {},
         editedItem: {
-            ra: "",
-            name: "",
-            email: "",
-            cpf: "",
-            locked: "",
+            ra: '',
+            name: '',
+            email: '',
+            cpf: '',
+            locked: '',
         },
         addGrade: {
-            ra: "",
-            grade: "",
-            subject: "",
+            ra: '',
+            grade: '',
+            subject: '',
         },
     },
 

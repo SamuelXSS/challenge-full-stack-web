@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import api from "../services/api";
+import api from '../services/api'
 
 import StudentDialog from './Dialogs/StudentDialog'
 import GradesDialog from './Dialogs/GradesDialog'
@@ -68,33 +68,33 @@ export default {
   data: () => ({
     headers: [
       {
-        text: "Registro Acadêmico",
-        align: "start",
+        text: 'Registro Acadêmico',
+        align: 'start',
         sortable: true,
-        value: "ra",
+        value: 'ra',
       },
-      { text: "Nome", value: "name" },
-      { text: "CPF", value: "cpf" },
-      { text: "Ações", value: "actions", sortable: false },
+      { text: 'Nome', value: 'name' },
+      { text: 'CPF', value: 'cpf' },
+      { text: 'Ações', value: 'actions', sortable: false },
     ],
   }),
 
   watch: {
     dialog(val) {
-      val || this.close();
+      val || this.close()
     },
     dialogDelete(val) {
-      val || this.closeDelete();
+      val || this.closeDelete()
     },
   },
 
   created() {
-    this.initialize();
+    this.initialize()
   },
 
   methods: {
     async initialize() {
-      this.$store.state.students = [];
+      this.$store.state.students = []
       await api.get("/students").then((res) => {
         res.data.map((x) => {
           this.$store.state.students.push({
@@ -103,37 +103,37 @@ export default {
             email: x.email,
             cpf: x.cpf,
             locked: x.locked,
-          });
-        });
-      });
+          })
+        })
+      })
     },
 
     editItem(item) {
-      this.$store.state.editedIndex = this.$store.state.students.indexOf(item);
-      this.$store.state.editedItem = Object.assign({}, item);
-      this.$store.state.dialog = true;
+      this.$store.state.editedIndex = this.$store.state.students.indexOf(item)
+      this.$store.state.editedItem = Object.assign({}, item)
+      this.$store.state.dialog = true
     },
 
     async showGrades(item) {
-      console.log(item);
-      this.$store.state.gradesDialog = true;
-      this.$store.state.editedItem = Object.assign({}, item);
-      this.$store.state.grades = [];
+      console.log(item)
+      this.$store.state.gradesDialog = true
+      this.$store.state.editedItem = Object.assign({}, item)
+      this.$store.state.grades = []
       await api.get(`/students/${item.ra}/grade`).then((res) => {
         res.data.map((x) => {
           this.$store.state.grades.push({
             subject: x.subjects.name,
             grade: parseFloat(x.grade),
-          });
-        });
-      });
+          })
+        })
+      })
     },
 
     deleteItem(item) {
-      this.$store.state.editedIndex = this.$store.state.students.indexOf(item);
-      this.$store.state.editedItem = Object.assign({}, item);
-      this.$store.state.dialogDelete = true;
+      this.$store.state.editedIndex = this.$store.state.students.indexOf(item)
+      this.$store.state.editedItem = Object.assign({}, item)
+      this.$store.state.dialogDelete = true
     },
   },
-};
+}
 </script>

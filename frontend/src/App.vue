@@ -51,19 +51,19 @@
 </template>
 
 <script>
-import StudentTable from "@/components/StudentTable.vue";
-import { mapState } from "vuex";
+import StudentTable from '@/components/StudentTable.vue'
+import { mapState } from 'vuex'
 export default {
   components: {
     StudentTable,
   },
   computed: {
-    ...mapState(["snack"]),
+    ...mapState(['snack']),
   },
   data: () => ({
-    cards: ["Students"],
+    cards: ['Students'],
     drawer: null,
-    links: [["mdi-account-multiple", "Alunos"]],
+    links: [['mdi-account-multiple', 'Alunos']],
   }),
-};
+}
 </script>

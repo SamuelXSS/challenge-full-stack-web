@@ -76,33 +76,33 @@
 </template>
 
 <script>
-import api from "../../services/api";
+import api from '../../services/api'
 
 export default {
   computed: {
     isDisabled() {
-      return this.$store.state.editedIndex === -1 ? false : true;
+      return this.$store.state.editedIndex === -1 ? false : true
     },
     formTitle() {
       return this.$store.state.editedIndex === -1
-        ? "Novo Aluno"
-        : "Editar Aluno";
+        ? 'Novo Aluno'
+        : 'Editar Aluno'
     },
   },
   methods: {
     close() {
-      this.$store.state.dialog = false;
+      this.$store.state.dialog = false
       this.$nextTick(() => {
-        this.$store.state.editedItem = Object.assign({}, this.defaultItem);
-        this.$store.state.editedIndex = -1;
-      });
+        this.$store.state.editedItem = Object.assign({}, this.defaultItem)
+        this.$store.state.editedIndex = -1
+      })
     },
     async save(item) {
       if (this.$store.state.editedIndex > -1) {
         Object.assign(
           this.$store.state.students[this.$store.state.editedIndex],
           this.$store.state.editedItem
-        );
+        )
         await api
           .put(`/students/${item.ra}`, {
             name: item.name,
@@ -110,14 +110,14 @@ export default {
             locked: this.$store.state.switch1,
           })
           .then((res) => {
-            this.close();
-            this.$store.dispatch("setSnack", {color: "success",res: res.data.success});
+            this.close()
+            this.$store.dispatch('setSnack', {color: 'success',res: res.data.success})
           })
           .catch((err) => {
             if (err.response) {
-              this.$store.dispatch("setSnack", {color: "error",res: err.response.data.error});
+              this.$store.dispatch('setSnack', {color: 'error',res: err.response.data.error})
             }
-          });
+          })
       } else {
         await api
           .post(`/students`, {
@@ -127,15 +127,15 @@ export default {
             locked: this.$store.state.switch1,
           })
           .then(() => {
-            document.location.reload(true);
+            document.location.reload(true)
           })
           .catch((err) => {
             if (err.response) {
-              this.$store.dispatch("setSnack", {color: "error",res: err.response.data.error});
+              this.$store.dispatch('setSnack', {color: 'error',res: err.response.data.error})
             }
-          });
+          })
       }
     },
   },
-};
+}
 </script>
