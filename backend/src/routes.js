@@ -7,6 +7,7 @@ const routes  = express.Router()
 require('dotenv').config()
 
 //STUDENTS ROUTES -- OK
+routes.get('/students/:student_id', StudentController.show)
 routes.get('/students', StudentController.index)
 routes.post('/students', StudentController.store)
 routes.put('/students/:student_id', StudentController.update)
